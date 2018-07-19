@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>test socket</title>
+</head>
+<body>
+	<div style="padding-bottom:10px;">
+		<button id="btnReadCard">Read Card</button>&nbsp;
+		<button id="btnReadCardtext">Read Card Text</button>&nbsp;
+		<button id="btnReadHostDetail">Read Host Info</button>&nbsp;
+		<button id="btnVerifyPIN">Verify PIN</button>&nbsp;
+		<button id="btntestDialog">Test JDialog</button>&nbsp;
+		<button id="btnUpdate">Update</button>&nbsp
+		<span id="loading"></span>
+	</div>
+	
+	<table id="tableDetail"  border="1" cellpadding="5" cellspacing="0">
+	</table>
+	
+</body>
+<script src='jquery.min.js'></script>
+<script src='socket.io/socket.io.js'></script>
+<script type="text/javascript">
+    
+    $( document ).ready(function() {
+    	var socketServerUrl = '';
+		var socket;
+		if (window.location.protocol == "https:") {
+		   socketServerUrl = 'https://localhost:10443/post';
+		   socket =  io.connect(socketServerUrl, {'force new connection': true, secure: true});
+		}
+		else{
+			socketServerUrl = 'http://localhost:3000/post';
+			socket =  io.connect(socketServerUrl, {'force new connection': true, transports: ['websocket']});
+		}
+
+		var widgetVersion = '1.1';
+		console.log(socket);
+		if(socket.connected == false){
+			$("#loading").html("not connect");
+		}
+		
+    	socket.on('connect', function(){
+			console.log('connected to server', socket.id);
+			if(socket.id == undefined || socket.id == null){
+				console.log('connected error');
+			}
+			else{
+				$("#loading").html("connected");
+				socket.emit('widget detail',widgetVersion, function(data){
+					console.log(data);
+				});
+			}
+		});  
+    	socket.on('disconnect', function(){
+    		$("#loading").html("not connect");
+    	});
+    	
+    	$("#btnReadCard").on('click',function(e){
+    		socket.emit('read card', function(data){
+				//return status 0 = Exception , 1 = CardException , 2 = CardNotPresentException , 3 = ready
+				console.log(data);
+				$('#loading').html("Reading... (status "+data+")");
+				$('#tableDetail').html("");
+			});
+    	});
+    	
+    	$("#btnReadCardtext").on('click',function(e){
+    		socket.emit('read card text', function(data){
+				//return status 0 = Exception , 1 = CardException , 2 = CardNotPresentException , 3 = ready
+				console.log(data);
+				$('#loading').html("Reading... (status "+data+")");
+				$('#tableDetail').html("");
+			});
+    	});
+		
+		$('#btnVerifyPIN').on('click',function(e){
+			socket.emit('verify pin', function(data){
+
+				$('#loading').html("Reading... ");
+				$('#tableDetail').html("");
+			});
+		});
+		
+		$('#btntestDialog').on('click',function(e){
+			socket.emit('test dialog', function(data){
+				console.log(data);
+			});
+		});
+		
+		$('#btnUpdate').on('click',function(e){
+			socket.emit('update app', function(data){
+				console.log(data);
+			});
+		});
+    	
+    	socket.on('onReadCard', function(data){
+			console.log(data);
+			if(data != null){
+				$('#loading').html("status "+data.status+" : "+data.statusMsg);
+				if(data.thaiCardDetail != null){
+					var dataDetail = data.thaiCardDetail;
+					var html = "";
+					html += "<tr><td>เลขบัตร</td><td>"+dataDetail.pid+"</td></tr>";
+					html += "<tr><td>ชื่อ นามสกุล (ไทย)</td><td>"+dataDetail.thname0+" "+dataDetail.thname1+" "+dataDetail.thname3+"</td></tr>";
+					html += "<tr><td>ชื่อ นามสกุล (อังกฤษ)</td><td>"+dataDetail.enname0+" "+dataDetail.enname1+" "+dataDetail.enname3+"</td></tr>";
+					html += "<tr><td>วันเกิด</td><td>"+dataDetail.birthdate+"</td></tr>";
+					html += "<tr><td>เพศ</td><td>"+(dataDetail.gender == 1 ? 'ชาย' : 'หญิง')+"</td></tr>";
+					html += "<tr><td>บัตรหมดอายุ</td><td>"+dataDetail.expiredate+"</td></tr>";
+					html += "<tr><td>วันที่ออกบัตร</td><td>"+dataDetail.issuedate+"</td></tr>";
+					
+					var addr = "";
+					if(dataDetail.addrHS != ''){
+						addr += "บ้านเลขที่ "+dataDetail.addrHS+" ";
+					}
+					if(dataDetail.addrMoo != ''){
+						addr += dataDetail.addrMoo+" ";
+					}
+					if(dataDetail.addrTrk != ''){
+						addr += dataDetail.addrTrk+" ";
+					}
+					if(dataDetail.addrSoi != ''){
+						addr += dataDetail.addrSoi+" ";
+					}
+					if(dataDetail.addrStr != ''){
+						addr += dataDetail.addrStr+" ";
+					}
+					if(dataDetail.addrTmb != ''){
+						addr += dataDetail.addrTmb+" ";
+					}
+					if(dataDetail.addrAmp != ''){
+						addr += dataDetail.addrAmp+" ";
+					}
+					if(dataDetail.addrPrv != ''){
+						addr += dataDetail.addrPrv+" ";
+					}
+					
+					html += "<tr><td>ที่อยู่</td><td>"+addr+"</td></tr>";
+					html += "<tr><td>รูป</td><td><img src='data:image/jpg;base64,"+dataDetail.person_img+"' ></td></tr>";
+					$('#tableDetail').html(html);
+				}
+			}
+			else{
+				$('#loading').html("error");
+			}
+		});
+		
+		socket.on('onVerifyPIN', function(data){
+			console.log(data);
+			if(data != null){
+				$('#loading').html("status ");
+				$('#tableDetail').html(data);
+			}
+			else{
+				$('#loading').html("error");
+			}
+		});
+    	
+    	$("#btnReadHostDetail").on('click',function(e){
+    		socket.emit('read host detail', function(data){
+				//return status 0 = Exception , 1 = CardException , 2 = CardNotPresentException , 3 = ready
+				console.log(data);
+				
+				$('#tableDetail').html("");
+				
+				if(data != null){
+					var html = "";
+					html += "<tr><td>hostname</td><td>"+data.hostname+"</td></tr>";
+					html += "<tr><td>ipaddr</td><td>"+data.ipaddr+"</td></tr>";
+					html += "<tr><td>macaddr</td><td>"+data.macaddr+"</td></tr>";
+					html += "<tr><td>os_arch</td><td>"+data.os_arch+"</td></tr>";
+					html += "<tr><td>os_name</td><td>"+data.os_name+"</td></tr>";
+					html += "<tr><td>os_version</td><td>"+data.os_version+"</td></tr>";
+					html += "<tr><td>user_name</td><td>"+data.user_name+"</td></tr>";
+					
+					$('#tableDetail').html(html);
+					$('#loading').html("success");
+				}
+				else{
+					$('#loading').html("error");
+				}
+			});
+    	});
+		
+		
+		
+    	
+    	
+    });
+</script>
+</html>
