@@ -27,11 +27,11 @@
     	var socketServerUrl = '';
 		var socket;
 		if (window.location.protocol == "https:") {
-		   socketServerUrl = 'https://localhost:10443/post';
+		   socketServerUrl = 'https://www.crimesappservice.com:10443/post';
 		   socket =  io.connect(socketServerUrl, {'force new connection': true, secure: true});
 		}
 		else{
-			socketServerUrl = 'http://localhost:3000/post';
+			socketServerUrl = 'http://www.crimesappservice.com:3000/post';
 			socket =  io.connect(socketServerUrl, {'force new connection': true, transports: ['websocket']});
 		}
 
