@@ -26,12 +26,13 @@
     $( document ).ready(function() {
     	var socketServerUrl = '';
 		var socket;
+		var host = 'crimesappservice.com';
 		if (window.location.protocol == "https:") {
-		   socketServerUrl = 'https://www.crimesappservice.com:10443/post';
-		   socket =  io.connect(socketServerUrl, {'force new connection': true, secure: true});
+		   socketServerUrl = 'https://'+host+':10443/post';
+		   socket =  io.connect(socketServerUrl, {'force new connection': true,secure: true, reconnect: true, rejectUnauthorized : false });
 		}
 		else{
-			socketServerUrl = 'http://www.crimesappservice.com:3000/post';
+			socketServerUrl = 'http://'+host+':3000/post';
 			socket =  io.connect(socketServerUrl, {'force new connection': true, transports: ['websocket']});
 		}
 
