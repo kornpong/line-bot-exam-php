@@ -5,6 +5,10 @@ require_once('vendor/linecorp/line-bot-sdk/line-bot-sdk-tiny/LINEBotTiny.php');
 
 $access_token = '5Rw6I6Ip9YG+87B7hYVe4ncdteFtMf2j7GfCw5+pipGt+p1eMgmPmDym0y3oF+lOmIg9eGbdDHExD5F83cZ6i2u84zlcqqvr9fXmK0o9OpE9XkrazepIx1xUCB99vANBKnbVz73KEwJKoyO4S7T13gdB04t89/1O/w1cDnyilFU=';
 
+if($_GET['token']){
+   $access_token = $_GET['token'];
+}
+
 // Get POST body content
 $content = file_get_contents('php://input');
 // Parse JSON
