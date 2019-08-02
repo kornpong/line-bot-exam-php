@@ -11,6 +11,10 @@ if($_GET['token']){
 
 // Get POST body content
 $content = file_get_contents('php://input');
+
+error_log($content);
+echo $content;
+
 // Parse JSON
 $events = json_decode($content, true);
 // Validate parsed JSON data
